@@ -1,0 +1,38 @@
+name: Update resume streak
+
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-resume:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Update Duolingo streak
+        run: node scripts/update-streak.mjs
+
+      - name: Compile resume
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: jane_resume_w_streak.tex
+
+      - name: Commit updated resume
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add generated/streak.tex jane_resume_w_streak.pdf
+          git commit -m "Update Duolingo streak" || exit 0
+          git push
